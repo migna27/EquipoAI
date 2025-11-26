@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
-# Importamos nuestras funciones matemáticas propias
-from calculos import obtener_mcd, obtener_mcm, obtener_mcm_lista
+# Importamos las nuevas funciones
+from calculos import obtener_mcd, obtener_mcm, obtener_mcm_lista, calcular_relacion, calcular_velocidad
 
 app = Flask(__name__)
 
@@ -8,13 +8,14 @@ app = Flask(__name__)
 def index():
     resultados = None
     analisis_pares = []
+    rpm_input = 100 # Valor por defecto
     
     if request.method == 'POST':
-        # 1. Obtener listas del formulario HTML
         dientes_raw = request.form.getlist("diente[]")
         manten_raw = request.form.getlist("mant[]")
+        # Capturamos el nuevo input de RPM del motor (si existe, sino 100)
+        rpm_input = float(request.form.get("rpm_input", 100))
 
-        # 2. Limpiar y convertir a enteros (validación básica)
         dientes = []
         manten = []
         
@@ -23,57 +24,60 @@ def index():
                 dientes.append(int(d))
                 manten.append(int(m))
 
-        # 3. Lógica de Negocio (Solo si hay al menos 2 engranajes)
         if len(dientes) >= 2:
-            
-            # --- A. Mantenimiento Global (MCM de todos los tiempos) ---
+            # 1. Mantenimiento Global
             mantenimiento_global = obtener_mcm_lista(manten)
 
-            # --- B. Análisis entre Pares (Todos contra todos) ---
-            # Iteramos para comparar cada engranaje con los siguientes en la lista
+            # 2. Pre-calcular RPM de cada engranaje (Asumiendo Tren Secuencial)
+            # Esto nos da la velocidad real de cada pieza en el sistema
+            lista_rpms = []
+            rpm_actual = rpm_input
+            for k in range(len(dientes)):
+                if k == 0:
+                    lista_rpms.append(rpm_actual)
+                else:
+                    # La velocidad del actual depende del anterior
+                    rpm_actual = calcular_velocidad(rpm_actual, dientes[k-1], dientes[k])
+                    lista_rpms.append(rpm_actual)
+
+            # 3. Análisis entre Pares
             for i in range(len(dientes)):
                 for j in range(i + 1, len(dientes)):
-                    
-                    # Datos del Engranaje A
-                    dA = dientes[i]
-                    mA = manten[i]
-                    
-                    # Datos del Engranaje B
-                    dB = dientes[j]
-                    mB = manten[j]
+                    dA, mA = dientes[i], manten[i]
+                    dB, mB = dientes[j], manten[j]
 
-                    # Cálculo de MCD de dientes (para ver el ciclo)
-                    mcd_dientes = obtener_mcd(dA, dB)
                     
-                    # Determinar tipo de ciclo
-                    # Si MCD es 1, son coprimos (ciclo completo). Si no, ciclo parcial.
-                    tipo_ciclo = "Completo" if mcd_dientes == 1 else "Parcial"
+                    mcd_val = obtener_mcd(dA, dB)
+                    tipo = "Completo" if mcd_val == 1 else "Parcial"
+                    mcm_mant = obtener_mcm(mA, mB)
                     
-                    # Texto de repetición de dientes
-                    repeticion_dientes = f"Cada {mcd_dientes} dientes"
+                    
+                    # Relación simplificada usando MCD
+                    ratio = calcular_relacion(dA, dB)
+                    
+                    # Recuperamos las RPM calculadas previamente para estos engranajes
+                    rpm_A = lista_rpms[i]
+                    rpm_B = lista_rpms[j]
 
-                    # Cálculo de coincidencia de mantenimiento (MCM de horas)
-                    mcm_horas = obtener_mcm(mA, mB)
-                    repeticion_mant = f"Cada {mcm_horas} horas"
-
-                    # Guardamos el análisis de este par
                     analisis_pares.append({
-                        "par": f"Engranaje {i+1} ↔ Engranaje {j+1}",
-                        "A_d": dA,
-                        "B_d": dB,
-                        "mcd": mcd_dientes,
-                        "ciclo": tipo_ciclo,
-                        "rep_dientes": repeticion_dientes,
-                        "A_m": mA,
-                        "B_m": mB,
-                        "rep_mant": repeticion_mant,
+                        "par": f"{i+1} ↔ {j+1}",
+                        "A_d": dA, "B_d": dB,
+                        "mcd": mcd_val,
+                        "ciclo": tipo,
+                        "rep_dientes": f"Cada {mcd_val} dientes",
+                        "A_m": mA, "B_m": mB,
+                        "rep_mant": f"Cada {mcm_mant} h",
+                        # Datos Nuevos
+                        "ratio": ratio,
+                        "rpm_A": rpm_A,
+                        "rpm_B": rpm_B
                     })
 
-            # Empaquetamos los resultados generales
             resultados = {
                 "dientes": dientes,
                 "mant": manten,
                 "mantenimiento_global": mantenimiento_global,
+                "rpm_motor": rpm_input
             }
 
     return render_template("index.html", 
@@ -85,4 +89,4 @@ def documentacion():
     return render_template('documentacion.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
