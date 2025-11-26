@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: Helvetica, sans-serif;
+            color: #333;
+            font-size: 11pt;
+            line-height: 1.4;
+        }
+
+        
+        .logo-container {
+            text-align: center; 
+            margin-bottom: 20px;
+        }
+        
+        .logo-img {
+            height: 150px; /* Ajusta la altura para que no sea enorme */
+            width: auto;
+        }
+
+        h1 {
+            color: #003366;
+            text-align: center; /* Centrar el título */
+            border-bottom: 2px solid #003366;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-size: 22pt;
+            margin-top: 0;
+        }
+
+        .subtitle {
+            display: block;
+            font-size: 14pt;
+            color: #666;
+            font-weight: normal;
+            margin-top: 5px;
+        }
+
+        /* --- ESTILOS DE SECCIONES (Igual que antes) --- */
+        h2 {
+            background-color: #f4f4f4;
+            color: #003366;
+            padding: 5px 10px;
+            font-size: 14pt;
+            margin-top: 20px;
+            border-left: 5px solid #003366;
+        }
+
+        /* Tablas */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th { background-color: #003366; color: white; font-weight: bold; padding: 8px; text-align: center; font-size: 10pt; border: 1px solid #003366; }
+        td { border: 1px solid #ccc; padding: 6px; text-align: center; font-size: 10pt; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+
+        /* Utilidades */
+        .highlight { color: #d9534f; font-weight: bold; }
+        .success { color: #28a745; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .label { font-weight: bold; color: #555; }
+
+        .summary-box { border: 1px solid #ccc; padding: 10px; background-color: #fdfdfd; margin-bottom: 20px; }
+        
+        .footer-text { text-align: center; font-size: 9pt; color: #888; margin-top: 50px; border-top: 1px solid #eee; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="logo-container">
+        <img src="{{ logo_path }}" class="logo-img">
+    </div>
+
+    <h1>
+        Reporte Técnico
+        <span class="subtitle">Sistema de Transmisión de Engranajes</span>
+    </h1>
+
+    <h2>1. Configuración del Sistema</h2>
+    <div class="summary-box">
+        <table style="border: none;">
+            <tr style="background-color: transparent;">
+                <td style="border: none; text-align: left;">
+                    <span class="label">Motor Principal:</span><br>
+                    {{ resultados.rpm_motor }} RPM
+                </td>
+                <td style="border: none; text-align: left;">
+                    <span class="label">Número de Etapas:</span><br>
+                    {{ resultados.dientes|length }} engranajes
+                </td>
+                <td style="border: none; text-align: left;" aria-setsize="12" >
+                    <span class="label">Secuencia:</span><br>
+                    {{ resultados.dientes }} 
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <h2>2. Análisis de Mantenimiento Global</h2>
+    <p aria-setsize="15">
+        Ciclo de mantenimiento sincronizado calculado mediante MCM
+    </p>
+    <div style="text-align: center; padding: 15px; border: 2px dashed #003366; margin: 10px 0;">
+        <span class="label">Mantenimiento General:</span><br>
+        <strong style="font-size: 16pt; color: #003366;">Cada {{ resultados.mantenimiento_global }} horas</strong>
+    </div>
+
+    <h2>3. Análisis Técnico Detallado</h2>
+    <table>
+        <thead>
+            <tr>
+                <th width="15%">Par</th>
+                <th width="15%">Config.<br>(Dientes)</th>
+                <th width="15%">Velocidad<br>(RPM)</th>
+                <th width="15%">Ratio</th>
+                <th width="20%">Ciclo</th>
+                <th width="20%">Mantenimiento</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in analisis_pares %}
+            <tr>
+                <td><strong>{{ row.par }}</strong></td>
+                <td>A: {{ row.A_d }}<br>B: {{ row.B_d }}</td>
+                <td><strong>{{ row.rpm_salida }}</strong></td>
+                <td>{{ row.ratio }}</td>
+                <td>
+                    {% if row.ciclo == 'Completo' %}
+                        <span class="success">Completo</span>
+                    {% else %}
+                        <span class="warning">Parcial</span>
+                    {% endif %}
+                    <br><small>MCD: {{ row.rep_dientes }}</small>
+                </td>
+                <td><span class="highlight">{{ row.rep_mant }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer-text" aria-setsize="12">
+        Reporte generado automáticamente por Software de Análisis de Engranajes ITSON 
+    </div>
+
+</body>
+</html>

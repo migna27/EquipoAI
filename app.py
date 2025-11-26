@@ -1,20 +1,28 @@
-from flask import Flask, render_template, request
-# Importamos las nuevas funciones
+from flask import Flask, render_template, request, session, make_response
 from calculos import obtener_mcd, obtener_mcm, obtener_mcm_lista, calcular_relacion, calcular_velocidad
+from xhtml2pdf import pisa
+import io
+import os  # <--- NUEVO: Necesario para encontrar la imagen
 
 app = Flask(__name__)
+app.secret_key = "engranajes_clave_secreta"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # ... (El código de esta función se queda EXACTAMENTE IGUAL) ...
+    # (Lo omito aquí para ahorrar espacio, no cambies nada en index())
     resultados = None
     analisis_pares = []
-    rpm_input = 100 # Valor por defecto
     
     if request.method == 'POST':
+        try:
+            rpm_str = request.form.get("rpm_input")
+            rpm_input = float(rpm_str) if rpm_str else 0.0
+        except ValueError:
+            rpm_input = 0.0
+
         dientes_raw = request.form.getlist("diente[]")
         manten_raw = request.form.getlist("mant[]")
-        # Capturamos el nuevo input de RPM del motor (si existe, sino 100)
-        rpm_input = float(request.form.get("rpm_input", 100))
 
         dientes = []
         manten = []
@@ -25,52 +33,28 @@ def index():
                 manten.append(int(m))
 
         if len(dientes) >= 2:
-            # 1. Mantenimiento Global
             mantenimiento_global = obtener_mcm_lista(manten)
-
-            # 2. Pre-calcular RPM de cada engranaje (Asumiendo Tren Secuencial)
-            # Esto nos da la velocidad real de cada pieza en el sistema
-            lista_rpms = []
-            rpm_actual = rpm_input
-            for k in range(len(dientes)):
-                if k == 0:
-                    lista_rpms.append(rpm_actual)
-                else:
-                    # La velocidad del actual depende del anterior
-                    rpm_actual = calcular_velocidad(rpm_actual, dientes[k-1], dientes[k])
-                    lista_rpms.append(rpm_actual)
-
-            # 3. Análisis entre Pares
+            
             for i in range(len(dientes)):
                 for j in range(i + 1, len(dientes)):
-                    dA, mA = dientes[i], manten[i]
-                    dB, mB = dientes[j], manten[j]
+                    dA = dientes[i]; mA = manten[i]
+                    dB = dientes[j]; mB = manten[j]
 
-                    
                     mcd_val = obtener_mcd(dA, dB)
-                    tipo = "Completo" if mcd_val == 1 else "Parcial"
-                    mcm_mant = obtener_mcm(mA, mB)
+                    mcm_val = obtener_mcm(mA, mB)
                     
-                    
-                    # Relación simplificada usando MCD
                     ratio = calcular_relacion(dA, dB)
-                    
-                    # Recuperamos las RPM calculadas previamente para estos engranajes
-                    rpm_A = lista_rpms[i]
-                    rpm_B = lista_rpms[j]
+                    rpm_salida = calcular_velocidad(rpm_input, dA, dB)
 
                     analisis_pares.append({
                         "par": f"{i+1} ↔ {j+1}",
                         "A_d": dA, "B_d": dB,
-                        "mcd": mcd_val,
-                        "ciclo": tipo,
-                        "rep_dientes": f"Cada {mcd_val} dientes",
+                        "ciclo": "Completo" if mcd_val == 1 else "Parcial",
+                        "rep_dientes": mcd_val,
                         "A_m": mA, "B_m": mB,
-                        "rep_mant": f"Cada {mcm_mant} h",
-                        # Datos Nuevos
+                        "rep_mant": mcm_val,
                         "ratio": ratio,
-                        "rpm_A": rpm_A,
-                        "rpm_B": rpm_B
+                        "rpm_salida": rpm_salida
                     })
 
             resultados = {
@@ -80,13 +64,39 @@ def index():
                 "rpm_motor": rpm_input
             }
 
-    return render_template("index.html", 
-                           resultados=resultados, 
-                           analisis_pares=analisis_pares)
+            session['resultados'] = resultados
+            session['analisis_pares'] = analisis_pares
 
-@app.route('/documentacion')
-def documentacion():
-    return render_template('documentacion.html')
+    return render_template("index.html", resultados=resultados, analisis_pares=analisis_pares)
+
+@app.route('/descargar_pdf')
+def descargar_pdf():
+    resultados = session.get('resultados')
+    analisis_pares = session.get('analisis_pares')
+
+    if not resultados:
+        return "No hay datos para generar el reporte."
+
+    # Ruta absoluta de la imagen del logo
+    logo_path = os.path.join(app.root_path, 'static', 'imagenes', 'ITSON_azul.png')
+
+    # Pasamos 'logo_path' a la plantilla
+    html_content = render_template('reporte_pdf.html', 
+                                   resultados=resultados, 
+                                   analisis_pares=analisis_pares,
+                                   logo_path=logo_path)
+
+    pdf_file = io.BytesIO()
+    pisa_status = pisa.CreatePDF(io.BytesIO(html_content.encode('utf-8')), dest=pdf_file)
+
+    if pisa_status.err:
+        return "Error al generar el PDF"
+
+    response = make_response(pdf_file.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'attachment; filename=reporte_tecnico.pdf'
+    
+    return response
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run()

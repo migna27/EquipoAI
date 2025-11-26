@@ -258,3 +258,59 @@ p { margin-bottom: 1rem; }
 .top-0 { top: 0 !important; }
 .end-0 { right: 0 !important; }
 .rounded-circle { border-radius: 50% !important; }
+
+@media print {
+    /* 1. Ocultar elementos interactivos que no sirven en papel */
+    .btn, 
+    .no-print, 
+    .card-header button, 
+    .input-group button, 
+    .alert,
+    a[href="/documentacion"] { 
+        display: none !important; 
+    }
+
+    /* 2. Cambiar colores para ahorrar tinta y ser legible */
+    body {
+        background-color: white !important;
+        color: black !important;
+    }
+
+    .card {
+        background-color: white !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: black !important;
+    }
+
+    .table {
+        color: black !important;
+        border-color: #000 !important;
+    }
+    
+    .table thead th {
+        background-color: #ddd !important;
+        color: black !important;
+        border-bottom: 2px solid black !important;
+    }
+
+    /* Asegurar que el Canvas se vea bien */
+    canvas {
+        background-color: white !important;
+        border: 1px solid #ccc !important;
+    }
+
+    /* 3. Forzar la visualización de textos blancos */
+    .text-white, .text-muted, h1, h2, h3 {
+        color: black !important;
+    }
+    
+    /* Ajustar el formulario para que parezca texto estático */
+    .form-control {
+        border: none !important;
+        background: transparent !important;
+        color: black !important;
+        padding: 0 !important;
+        width: auto !important;
+    }
+}

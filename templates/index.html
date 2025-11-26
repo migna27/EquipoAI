@@ -2,197 +2,127 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Analizador de Engranes con IA</title>
+    <title>Analizador de Engranes</title>
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     
     <style>
         .valid-input { border-color: #28a745 !important; }
         .invalid-input { border-color: #dc3545 !important; }
-        .result-card { border-left: 5px solid #0d6efd; }
     </style>
 
     <script>
         function agregarFila() {
             const tbody = document.getElementById("tbody-engranes");
             const fila = document.createElement("tr");
-
             fila.innerHTML = `
-                <td><input type="number" name="diente[]" class="form-control" min="1" placeholder="Ej: 24" required oninput="validarInput(this)"></td>
-                <td><input type="number" name="mant[]" class="form-control" min="1" placeholder="Ej: 100" required oninput="validarInput(this)"></td>
+                <td><input type="number" name="diente[]" class="form-control" required oninput="validarInput(this)"></td>
+                <td><input type="number" name="mant[]" class="form-control" required oninput="validarInput(this)"></td>
                 <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">Eliminar</button></td>
             `;
             tbody.appendChild(fila);
         }
-
-        function eliminarFila(btn) {
-            const filas = document.querySelectorAll("#tbody-engranes tr");
-            if(filas.length > 2) {
-                btn.parentElement.parentElement.remove();
-            } else {
-                alert("Se recomiendan al menos 2 engranajes para el cálculo.");
-                btn.parentElement.parentElement.remove();
-            }
-        }
-
+        function eliminarFila(btn) { btn.parentElement.parentElement.remove(); }
         function validarInput(input) {
             if (input.value.trim() === "" || parseInt(input.value) <= 0) {
-                input.classList.add("invalid-input");
-                input.classList.remove("valid-input");
+                input.classList.add("invalid-input"); input.classList.remove("valid-input");
             } else {
-                input.classList.add("valid-input");
-                input.classList.remove("invalid-input");
+                input.classList.add("valid-input"); input.classList.remove("invalid-input");
             }
         }
     </script>
 </head>
-
-<body class="bg-light">
+<body>
 
 <div class="container py-5">
-
-    <a href="/documentacion" class="btn btn-warning position-absolute top-0 end-0 mt-4 me-3 rounded-circle fw-bold shadow" 
-       style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;" 
-       target="_blank" title="Ver Documentación y Ayuda">
-       ?
-    </a>
-
-    <h1 class="mb-4 text-center">Analizador de Sistema de Engranajes</h1>
+    <h1 class="mb-4 text-center">⚙️ Analizador de Sistema de Engranajes</h1>
 
     <div class="card shadow mb-4">
-        <div class="card-header bg-primary text-white">
-            Configuración del Sistema
-        </div>
+        <div class="card-header bg-primary text-white">Configuración</div>
         <div class="card-body">
             <form method="POST">
-                
-                <div class="row mb-3 align-items-end">
+                <div class="row mb-3 align-items-center">
                     <div class="col-auto">
-                        <label class="text-white mb-1">Velocidad del Motor (RPM Entrada):</label>
+                        <label><strong>RPM del Motor:</strong></label>
                         <input type="number" name="rpm_input" class="form-control" 
                                value="{{ resultados.rpm_motor if resultados else 100 }}" 
-                               min="1" step="0.1" style="width: 150px;">
-                    </div>
-                    <div class="col">
-                        <p class="text-muted small mb-0 mt-3">
-                            * Esta velocidad se usará para calcular las RPM de todo el tren de engranajes.
-                        </p>
+                               min="1" step="0.1" style="width: 120px; display:inline-block;">
                     </div>
                 </div>
 
-                <table class="table table-bordered table-striped align-middle">
+                <table class="table table-bordered table-striped">
                     <thead class="table-dark">
-                        <tr>
-                            <th>Cantidad de Dientes</th>
-                            <th>Intervalo de Mantenimiento (horas)</th>
-                            <th>Acciones</th>
-                        </tr>
+                        <tr><th>Dientes</th><th>Mantenimiento (h)</th><th>Acción</th></tr>
                     </thead>
                     <tbody id="tbody-engranes">
-                        <tr>
-                            <td><input type="number" name="diente[]" class="form-control" min="1" placeholder="Ej: 24" required oninput="validarInput(this)"></td>
-                            <td><input type="number" name="mant[]" class="form-control" min="1" placeholder="Ej: 100" required oninput="validarInput(this)"></td>
-                            <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">Eliminar</button></td>
-                        </tr>
-                        <tr>
-                            <td><input type="number" name="diente[]" class="form-control" min="1" placeholder="Ej: 12" required oninput="validarInput(this)"></td>
-                            <td><input type="number" name="mant[]" class="form-control" min="1" placeholder="Ej: 150" required oninput="validarInput(this)"></td>
-                            <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">Eliminar</button></td>
-                        </tr>
+                        {% if resultados and resultados.dientes %}
+                            {% for i in range(resultados.dientes|length) %}
+                            <tr>
+                                <td><input type="number" name="diente[]" class="form-control" value="{{ resultados.dientes[i] }}"></td>
+                                <td><input type="number" name="mant[]" class="form-control" value="{{ resultados.mant[i] }}"></td>
+                                <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">X</button></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td><input type="number" name="diente[]" class="form-control"></td>
+                                <td><input type="number" name="mant[]" class="form-control" ></td>
+                                <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">X</button></td>
+                            </tr>
+                            <tr>
+                                <td><input type="number" name="diente[]" class="form-control" ></td>
+                                <td><input type="number" name="mant[]" class="form-control" ></td>
+                                <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">X</button></td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
-
-                <div class="d-flex justify-content-between mt-3">
-                    <button type="button" class="btn btn-outline-primary" onclick="agregarFila()">➕ Agregar otro engranaje</button>
-                    <button type="submit" class="btn btn-success px-5 fw-bold">Calcular Sistema</button>
-                </div>
+                <button type="button" class="btn btn-outline-primary" onclick="agregarFila()">+ Agregar</button>
+                <button type="submit" class="btn btn-success">Calcular</button>
             </form>
         </div>
     </div>
 
     {% if resultados %}
-    <div class="card shadow result-card fade-in">
+    <div class="card shadow mt-4">
         <div class="card-body">
-            
-            <h3 class="mb-3 text-primary">Resultados Generales</h3>
-            <div class="alert alert-info">
-                <strong>Mantenimiento Global:</strong> Todos los engranajes coincidirán para mantenimiento simultáneo cada 
-                <span class="fs-4 fw-bold">{{ resultados.mantenimiento_global }}</span> horas.
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="text-primary">Resultados</h3>
+                <a href="{{ url_for('descargar_pdf') }}" class="btn btn-warning">📄 Descargar PDF</a>
             </div>
 
-            <h4 class="mt-4">Análisis Detallado (Ingeniería y Mantenimiento)</h4>
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered text-center align-middle">
-                    <thead class="table-secondary">
-                        <tr>
-                            <th rowspan="2">Par Analizado</th>
-                            <th colspan="2">Dientes</th>
-                            <th colspan="2" style="background-color: #2c3e50; color: white;">Ingeniería</th>
-                            <th colspan="2">Ciclo de Giro</th>
-                            <th colspan="3">Mantenimiento</th>
-                        </tr>
-                        <tr>
-                            <th>A</th>
-                            <th>B</th>
-                            <th style="background-color: #34495e; color: white;">Relación</th>
-                            <th style="background-color: #34495e; color: white;">Velocidades (RPM)</th>
-                            
-                            <th>Tipo</th>
-                            <th>Repetición (MCD)</th>
-                            <th>Int. A</th>
-                            <th>Int. B</th>
-                            <th>Coincidencia (MCM)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in analisis_pares %}
-                        <tr>
-                            <td class="fw-bold">{{ row.par }}</td>
-                            <td>{{ row.A_d }}</td>
-                            <td>{{ row.B_d }}</td>
-                            
-                            <td class="text-warning fw-bold">{{ row.ratio }}</td>
-                            <td>
-                                <div style="display: flex; flex-direction: column; align-items: center;">
-                                    <small class="text-muted">Entrada: {{ row.rpm_A }}</small>
-                                    <span class="text-white fw-bold">Salida: {{ row.rpm_B }}</span>
-                                </div>
-                            </td>
-                            
-                            <td>
-                                {% if row.ciclo == 'Completo' %}
-                                    <span class="badge bg-success">Completo</span>
-                                {% else %}
-                                    <span class="badge bg-warning text-dark">Parcial</span>
-                                {% endif %}
-                            </td>
-                            
-                            <td>{{ row.rep_dientes }}</td>
-                            
-                            <td>{{ row.A_m }} h</td>
-                            <td>{{ row.B_m }} h</td>
-                            <td class="fw-bold text-primary">{{ row.rep_mant }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="alert alert-info">
+                Mantenimiento Global: Cada <strong>{{ resultados.mantenimiento_global }}</strong> horas.
             </div>
+
+            <table class="table table-bordered text-center">
+                <thead class="table-secondary">
+                    <tr>
+                        <th>Par</th>
+                        <th>Dientes (A:B)</th>
+                        <th>Relación</th>
+                        <th>RPM Salida</th>
+                        <th>Ciclo</th>
+                        <th>Mantenimiento (h)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in analisis_pares %}
+                    <tr>
+                        <td>{{ row.par }}</td>
+                        <td>{{ row.A_d }} : {{ row.B_d }}</td>
+                        <td class="fw-bold">{{ row.ratio }}</td>
+                        <td class="text-success fw-bold">{{ row.rpm_salida }}</td>
+                        <td>{{ row.ciclo }}</td>
+                        <td>{{ row.rep_mant }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             
             {% include 'visualizacion.html' %}
-
-            <div class="mt-3">
-                <h5>Resumen de entrada:</h5>
-                <ul>
-                    <li><strong>Configuración de Dientes:</strong> {{ resultados.dientes }}</li>
-                    <li><strong>Configuración de Mantenimiento:</strong> {{ resultados.mant }}</li>
-                    <li><strong>RPM Base:</strong> {{ resultados.rpm_motor }}</li>
-                </ul>
-            </div>
-
         </div>
     </div>
     {% endif %}
-
 </div>
-
 </body>
 </html>
