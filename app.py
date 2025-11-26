@@ -80,5 +80,9 @@ def index():
                            resultados=resultados, 
                            analisis_pares=analisis_pares)
 
+@app.route('/documentacion')
+def documentacion():
+    return render_template('documentacion.html')
+
 if __name__ == '__main__':
     app.run(debug=True)
