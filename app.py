@@ -1,25 +1,30 @@
 from flask import Flask, render_template, request, session, make_response
-from calculos import obtener_mcd, obtener_mcm, obtener_mcm_lista, calcular_relacion, calcular_velocidad
+# Importamos la nueva función
+from calculos import obtener_mcd, obtener_mcm, obtener_mcm_lista, calcular_relacion, calcular_velocidad, calcular_distancia_centros
 from xhtml2pdf import pisa
 import io
-import os  # <--- NUEVO: Necesario para encontrar la imagen
+import os
 
 app = Flask(__name__)
 app.secret_key = "engranajes_clave_secreta"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # ... (El código de esta función se queda EXACTAMENTE IGUAL) ...
-    # (Lo omito aquí para ahorrar espacio, no cambies nada en index())
     resultados = None
     analisis_pares = []
     
     if request.method == 'POST':
         try:
+            
             rpm_str = request.form.get("rpm_input")
             rpm_input = float(rpm_str) if rpm_str else 0.0
+            
+            
+            mod_str = request.form.get("modulo_input")
+            modulo_input = float(mod_str) if mod_str else 1.0
         except ValueError:
             rpm_input = 0.0
+            modulo_input = 1.0
 
         dientes_raw = request.form.getlist("diente[]")
         manten_raw = request.form.getlist("mant[]")
@@ -45,6 +50,9 @@ def index():
                     
                     ratio = calcular_relacion(dA, dB)
                     rpm_salida = calcular_velocidad(rpm_input, dA, dB)
+                    
+                    
+                    distancia = calcular_distancia_centros(modulo_input, dA, dB)
 
                     analisis_pares.append({
                         "par": f"{i+1} ↔ {j+1}",
@@ -54,14 +62,16 @@ def index():
                         "A_m": mA, "B_m": mB,
                         "rep_mant": mcm_val,
                         "ratio": ratio,
-                        "rpm_salida": rpm_salida
+                        "rpm_salida": rpm_salida,
+                        "distancia": distancia  
                     })
 
             resultados = {
                 "dientes": dientes,
                 "mant": manten,
                 "mantenimiento_global": mantenimiento_global,
-                "rpm_motor": rpm_input
+                "rpm_motor": rpm_input,
+                "modulo": modulo_input 
             }
 
             session['resultados'] = resultados
@@ -77,10 +87,8 @@ def descargar_pdf():
     if not resultados:
         return "No hay datos para generar el reporte."
 
-    # Ruta absoluta de la imagen del logo
     logo_path = os.path.join(app.root_path, 'static', 'imagenes', 'ITSON_azul.png')
 
-    # Pasamos 'logo_path' a la plantilla
     html_content = render_template('reporte_pdf.html', 
                                    resultados=resultados, 
                                    analisis_pares=analisis_pares,
@@ -95,8 +103,11 @@ def descargar_pdf():
     response = make_response(pdf_file.getvalue())
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = 'attachment; filename=reporte_tecnico.pdf'
-    
     return response
+
+@app.route('/documentacion')
+def documentacion():
+    return render_template('documentacion.html')
 
 if __name__ == '__main__':
     app.run()

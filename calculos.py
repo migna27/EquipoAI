@@ -54,3 +54,12 @@ def calcular_velocidad(rpm_entrada, dientes_entrada, dientes_salida):
     """
     if dientes_salida == 0: return 0.0
     return round(rpm_entrada * (dientes_entrada / dientes_salida), 2)
+
+def calcular_distancia_centros(modulo, dientes_a, dientes_b):
+    """
+    Calcula la distancia entre los ejes de dos engranajes.
+    Fórmula: (Módulo * (Dientes_A + Dientes_B)) / 2
+    Retorna: Distancia en mm (asumiendo módulo en mm).
+    """
+    distancia = (modulo * (dientes_a + dientes_b)) / 2
+    return round(distancia, 2)
