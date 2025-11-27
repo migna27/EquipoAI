@@ -14,19 +14,29 @@
         function agregarFila() {
             const tbody = document.getElementById("tbody-engranes");
             const fila = document.createElement("tr");
+            
+           
             fila.innerHTML = `
-                <td><input type="number" name="diente[]" class="form-control" required oninput="validarInput(this)"></td>
-                <td><input type="number" name="mant[]" class="form-control" required oninput="validarInput(this)"></td>
+                <td><input type="number" name="diente[]" class="form-control" required min="1" oninput="validarInput(this)"></td>
+                <td><input type="number" name="mant[]" class="form-control" required min="1" oninput="validarInput(this)"></td>
                 <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">Eliminar</button></td>
             `;
+            
             tbody.appendChild(fila);
         }
-        function eliminarFila(btn) { btn.parentElement.parentElement.remove(); }
+
+        function eliminarFila(btn) { 
+            btn.parentElement.parentElement.remove(); 
+        }
+
         function validarInput(input) {
+            // Validación visual adicional
             if (input.value.trim() === "" || parseInt(input.value) <= 0) {
-                input.classList.add("invalid-input"); input.classList.remove("valid-input");
+                input.classList.add("invalid-input"); 
+                input.classList.remove("valid-input");
             } else {
-                input.classList.add("valid-input"); input.classList.remove("invalid-input");
+                input.classList.add("valid-input"); 
+                input.classList.remove("invalid-input");
             }
         }
     </script>
@@ -71,19 +81,20 @@
                     </thead>
                     <tbody id="tbody-engranes">
                         {% if resultados and resultados.dientes %}
-                            {% for i in range(resultados.dientes|length) %}
-                            <tr>
-                                <td><input type="number" name="diente[]" class="form-control" value="{{ resultados.dientes[i] }}"></td>
-                                <td><input type="number" name="mant[]" class="form-control" value="{{ resultados.mant[i] }}"></td>
-                                <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">X</button></td>
-                            </tr>
-                            {% endfor %}
+                           {% for i in range(resultados.dientes|length) %}
+                                <tr>
+                                    <td><input type="number" name="diente[]" class="form-control" value="{{ resultados.dientes[i] }}" min="1"></td>
+                                    <td><input type="number" name="mant[]" class="form-control" value="{{ resultados.mant[i] }}" min="1"></td>
+                                    <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">X</button></td>
+                                </tr>
+                                {% endfor %} 
                         {% else %}
-                            <tr>
-                                <td><input type="number" name="diente[]" class="form-control"></td>
-                                <td><input type="number" name="mant[]" class="form-control" ></td>
-                                <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">X</button></td>
-                            </tr>
+                        <tr>
+                            <td><input type="number" name="diente[]" class="form-control" min="1"></td>
+                            <td><input type="number" name="mant[]" class="form-control" min="1"></td>
+                            <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">X</button></td>
+                        </tr>
+
                             <tr>
                                 <td><input type="number" name="diente[]" class="form-control" ></td>
                                 <td><input type="number" name="mant[]" class="form-control" ></td>
