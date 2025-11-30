@@ -168,12 +168,14 @@ window.gearViz = (function() {
             currentX += prevGear.radius + radius;
 
             // 3. SINCRONIZACIÓN DE FASE (CORREGIDO)
-            // La fórmula mágica: El ángulo del nuevo engranaje depende del ángulo
-            // del anterior multiplicado por la relación de transmisión negativa,
-            // MÁS un offset de medio paso (PI/dientes) para alinear Diente con Hueco.
-            
             const ratio = prevGear.teeth / numDientes;
-            startAngle = - (prevGear.initialAngle * ratio) + (Math.PI / numDientes);
+            
+            // Calculamos el ángulo base invertido según el ratio
+            startAngle = - (prevGear.initialAngle * ratio);
+
+            if (numDientes % 2 === 0) {
+                startAngle += (Math.PI / numDientes);
+            }
         }
         gears.push(new Gear(currentX, centerY, numDientes, startAngle, colors[index % colors.length]));
     });

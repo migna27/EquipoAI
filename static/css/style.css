@@ -130,6 +130,9 @@ p { margin-bottom: 1rem; }
     outline: 0;
     border-color: var(--primary);
     box-shadow: 0 0 0 2px rgba(58, 143, 214, 0.25);
+
+    color: #fff;
+    background-color: var(--bg-input);
 }
 
 /* Input Group (para las RPM) */
@@ -147,8 +150,8 @@ p { margin-bottom: 1rem; }
 .input-group .btn { border-radius: 0 4px 4px 0; }
 
 /* Validación visual */
-.valid-input { border-color: var(--success) !important; background-color: #0f2e1b !important; }
-.invalid-input { border-color: var(--danger) !important; background-color: #361616 !important; }
+.valid-input { border-color: var(--success) !important; background-color: #0f2e1b !important; color: #fff;}
+.invalid-input { border-color: var(--danger) !important; background-color: #361616 !important; color: #fff !important;}
 
 /* --- 6. COMPONENTES: BOTONES --- */
 .btn {

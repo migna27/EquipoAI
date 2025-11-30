@@ -170,7 +170,13 @@
                             <small class="text-muted">Módulo {{ resultados.modulo }}</small>
                         </td>
 
-                        <td>{{ row.ciclo }}</td>
+                        <td>
+                            {% if row.ciclo == 'Completo' %}
+                                <span class="badge badge-success" style="font-size: 1em;">Completo</span>
+                            {% else %}
+                                <span class="badge badge-warning" style="font-size: 1em;">Parcial</span>
+                            {% endif %}
+                        </td>
                         <td>{{ row.rep_mant }}</td>
                     </tr>
                     {% endfor %}
