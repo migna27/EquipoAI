@@ -1,72 +1,88 @@
 <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-4 mb-2">
     <h4 class="text-primary m-0">Visualización Gráfica</h4>
     
-    <div class="btn-group shadow-sm">
-        <button class="btn btn-secondary btn-sm" id="btnResetView" title="Resetear Vista" style="display: flex; align-items: center; padding: 0.25rem 0.6rem;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
-                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
-            </svg>
+    <div class="btn-group">
+        <button class="btn btn-outline-secondary btn-sm" id="btnSlow" title="Alternar velocidad">
+            🐌
         </button>
-        <button class="btn btn-warning btn-sm" id="btnPause" title="Pausar/Reanudar" style="min-width: 40px;">
+        <button class="btn btn-warning btn-sm" id="btnPause" title="Pausar/Reanudar">
             ⏸
         </button>
     </div>
 </div>
 
-<div class="d-flex align-items-center mb-2 justify-content-between">
-    <div class="d-flex align-items-center">
-        <label class="text-muted small me-2" for="slowModeCheck">Ralentizar:</label>
-        <div class="form-check form-switch m-0">
-            <input class="form-check-input" type="checkbox" id="slowModeCheck">
-        </div>
-    </div>
-
-    <div class="d-flex align-items-center">
-        <label class="text-muted small me-2" for="zoomRange">Zoom:</label>
-        <input type="range" class="form-range" id="zoomRange" min="0.1" max="3" step="0.1" value="1" style="width: 120px;">
-    </div>
-</div>
-
 <div class="card bg-dark text-white mb-4 shadow" style="overflow: hidden;">
     <div class="card-body p-0 position-relative" id="canvasContainer">
+        
         <canvas 
             id="gearCanvas" 
             style="background-color: #1e1e1e; cursor: grab; display: block; width: 100%; height: 400px;"
             data-dientes='{{ resultados.dientes | tojson if resultados and resultados.dientes else "[]" }}'
         ></canvas>
         
-        <div class="position-absolute bottom-0 start-0 p-2 text-muted small" style="pointer-events: none; opacity: 0.6;">
-            # para mover • # para zoom
-        </div>
+        <div class="position-absolute bottom-0 start-0 w-100 d-flex justify-content-between align-items-center px-4 py-2"
+            style="background: transparent;">
+
+            
+            <div class="d-flex align-items-center gap-4 small text-secondary">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary bg-opacity-25 text-light rounded-pill">#</span>
+                    <span class="text-light">Arrastrar</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary bg-opacity-25 text-light rounded-pill">#</span>
+                    <span class="text-light">Zoom</span>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 ms-auto me-3 p-2"
+                style="background: rgba(0,0,0,0.25); backdrop-filter: blur(4px); border-radius: 8px;">
+                
+                <span class="text-light small">🔍</span>
+
+                <input type="range" class="form-range" id="zoomRange" min="0.1" max="3" step="0.1"
+                    value="1" style="width: 120px;">
+
+                <button class="btn btn-sm btn-outline-light border-0" 
+                    id="btnResetView" 
+                    title="Restaurar vista original">
+                    ⟲
+                </button>
+            </div>
+
+        </div>  
+
     </div>
 </div>
 
 <script src="{{ url_for('static', filename='js/engranaje.js') }}"></script>
+
 <script>
 function generarYDescargarPDF() {
+    console.log("Iniciando generación de PDF...");
     const canvas = document.getElementById('gearCanvas');
-    // Verificamos que el canvas y nuestra librería de visualización (window.gearViz) existan
-    if (canvas && window.gearViz) {
-        
-        // 1. Forzamos un dibujado del canvas SIN el grid (usando la nueva función pública)
-        window.gearViz.drawForCapture();
-        
-        // 2. Capturamos el contenido del canvas en este instante (ahora limpio)
-        const dataURL = canvas.toDataURL('image/png');
-        
-        // 3. Ponemos la imagen en el input oculto del formulario
-        const inputImagen = document.getElementById('gear_image_data');
-        if (inputImagen) {
-            inputImagen.value = dataURL;
-            // 4. Enviamos el formulario para descargar el PDF
-            document.getElementById('pdfForm').submit();
-        } else {
-            console.error("Error: No se encontró el input 'gear_image_data'. Asegúrate de haber actualizado index.html con el formulario.");
-        }
+    const inputImagen = document.getElementById('gear_image_data');
+    const form = document.getElementById('pdfForm');
 
-    } else {
-        alert("Error: No se puede generar la imagen de la visualización.");
+    if (!canvas || !inputImagen || !form) {
+        alert("Error crítico: Faltan elementos en el HTML.");
+        return;
+    }
+
+    if (!window.gearViz || typeof window.gearViz.drawForCapture !== 'function') {
+        alert("Aviso: Refresca la página (Ctrl+F5) para actualizar los scripts.");
+        inputImagen.value = canvas.toDataURL('image/png');
+        form.submit();
+        return;
+    }
+
+    try {
+        window.gearViz.drawForCapture();
+        inputImagen.value = canvas.toDataURL('image/png');
+        form.submit();
+    } catch (err) {
+        console.error(err);
+        alert("Error: " + err.message);
     }
 }
 </script>

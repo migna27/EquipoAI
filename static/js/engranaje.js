@@ -1,4 +1,3 @@
-// Asignamos la función autoejecutable a una variable global para exponer métodos
 window.gearViz = (function() {
     const canvas = document.getElementById('gearCanvas');
     const container = document.getElementById('canvasContainer');
@@ -15,9 +14,13 @@ window.gearViz = (function() {
     let cameraZoom = 1;
     let isDragging = false;
     let dragStart = { x: 0, y: 0 };
+    
+    // Estados de botones
     let isPaused = false;
+    let isSlowMode = false; // Nuevo estado para el botón lento
 
-    const slowModeCheck = document.getElementById('slowModeCheck');
+    // Referencias al DOM (Actualizadas)
+    const btnSlow = document.getElementById('btnSlow'); // Ahora es un botón
     const zoomSlider = document.getElementById('zoomRange');
     const btnPause = document.getElementById('btnPause');
     const btnReset = document.getElementById('btnResetView');
@@ -57,18 +60,16 @@ window.gearViz = (function() {
             const r_inner = r_pitch - TOOTH_DEPTH;
             const r_hole = this.teeth > 10 ? r_pitch * 0.25 : 6;
 
-            // 1. Gradiente Más Sutil
             const gradient = ctx.createRadialGradient(0, 0, r_inner * 0.5, 0, 0, r_outer);
             gradient.addColorStop(0, this.colorHex);
-            // CAMBIO: Valores más bajos para un efecto más suave
-            gradient.addColorStop(0.8, this.shadeColor(this.colorHex, -10)); // Antes -20
-            gradient.addColorStop(1, this.shadeColor(this.colorHex, -25));  // Antes -40
+            gradient.addColorStop(0.8, this.shadeColor(this.colorHex, -10));
+            gradient.addColorStop(1, this.shadeColor(this.colorHex, -25));
 
             ctx.fillStyle = gradient;
             ctx.strokeStyle = '#111';
             ctx.lineWidth = 1;
 
-            // 2. Dientes
+            // Dientes
             ctx.beginPath();
             const numPoints = this.teeth * 2;
             for (let i = 0; i < numPoints; i++) {
@@ -90,7 +91,7 @@ window.gearViz = (function() {
             ctx.fill();
             ctx.stroke();
 
-            // 3. Punto Guía Blanco
+            // Punto Guía Blanco
             ctx.beginPath();
             ctx.arc(0, -(r_pitch - 2), 3, 0, Math.PI * 2); 
             ctx.fillStyle = 'white';
@@ -98,7 +99,7 @@ window.gearViz = (function() {
             ctx.lineWidth = 0.5;
             ctx.stroke();
 
-            // 4. Eje Central
+            // Eje Central
             ctx.beginPath();
             ctx.arc(0, 0, r_hole, 0, Math.PI * 2);
             ctx.fillStyle = '#ddd';
@@ -106,13 +107,13 @@ window.gearViz = (function() {
             ctx.lineWidth = 1;
             ctx.stroke();
             
-            // 5. Chavetero
+            // Chavetero
             ctx.beginPath();
             ctx.rect(-r_hole/4, -r_hole, r_hole/2, r_hole/2);
             ctx.fillStyle = '#333';
             ctx.fill();
 
-            // 6. Texto
+            // Texto
             if (this.teeth > 12) {
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
                 ctx.font = 'bold 12px Arial';
@@ -175,7 +176,6 @@ window.gearViz = (function() {
         gears.push(new Gear(currentX, centerY, numDientes, startAngle, colors[index % colors.length]));
     });
 
-    // Centrado Inicial
     const totalWidth = gears[gears.length-1].x - gears[0].x;
     cameraOffset.x = (container.clientWidth / 2) - (totalWidth / 2);
     cameraOffset.y = 400 / 2; 
@@ -210,9 +210,7 @@ window.gearViz = (function() {
         ctx.restore();
     }
 
-    // Nueva función principal de dibujo que acepta un parámetro booleano
     function drawFrame(includeGrid) {
-        // Limpiamos todo el canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         ctx.save();
@@ -236,7 +234,7 @@ window.gearViz = (function() {
 
         // Control de velocidad
         let speedFactor = BASE_SPEED;
-        if (slowModeCheck && slowModeCheck.checked) speedFactor *= 0.15;
+        if (isSlowMode) speedFactor *= 0.15; // Usamos la variable isSlowMode
         if (isPaused) speedFactor = 0;
 
         let dir = 1;
@@ -249,7 +247,6 @@ window.gearViz = (function() {
         ctx.restore();
     }
 
-    // Bucle de animación normal (siempre incluye el grid)
     function animate() {
         drawFrame(true);
         requestAnimationFrame(animate);
@@ -288,6 +285,20 @@ window.gearViz = (function() {
         });
     }
 
+    // Modo lento
+    if (btnSlow) {
+        btnSlow.addEventListener('click', () => {
+            isSlowMode = !isSlowMode;
+            if (isSlowMode) {
+                btnSlow.classList.remove('btn-outline-secondary');
+                btnSlow.classList.add('btn-info');
+            } else {
+                btnSlow.classList.add('btn-outline-secondary');
+                btnSlow.classList.remove('btn-info');
+            }
+        });
+    }
+
     if (btnPause) {
         btnPause.addEventListener('click', () => {
             isPaused = !isPaused;
@@ -307,10 +318,10 @@ window.gearViz = (function() {
 
     animate();
 
-    // Se la función pública para capturar sin grid
+    // Se expone la función pública para capturar sin grid
     return {
         drawForCapture: function() {
-            drawFrame(false);
+            drawFrame(false); 
         }
     };
 })();
