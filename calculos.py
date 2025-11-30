@@ -15,6 +15,27 @@ def factores_primos(n):
 
     return factores
 
+def euclides_mcd(a, b):
+    """
+    Calcula el MCD usando el algoritmo de Euclides:
+    - División
+    - Cociente
+    - Residuo
+    """
+
+    a, b = abs(a), abs(b)
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+def euclides_mcm(a, b):
+    """
+    Calcula el MCM usando el método clásico: |a*b| / MCD
+    """
+    if a == 0 or b == 0:
+        return 0
+    return abs(a * b) // euclides_mcd(a, b)
+
 def obtener_mcd(a, b):
     """
     Calcula el Máximo Común Divisor (MCD) usando descomposición en factores primos.
@@ -28,7 +49,11 @@ def obtener_mcd(a, b):
             exp_min = min(fa[primo], fb[primo])
             mcd *= primo ** exp_min
 
-    return mcd
+    eu = euclides_mcd(a, b)
+    if mcd != eu:
+        print(f"[ERROR] MCD por factores = {mcd}, pero Euclides = {eu}.")
+    else:
+        return mcd
 
 def obtener_mcm(a, b):
     """
@@ -47,7 +72,11 @@ def obtener_mcm(a, b):
         exp_max = max(factores_a.get(primo, 0), factores_b.get(primo, 0))
         mcm *= primo ** exp_max
 
-    return mcm
+    eu = euclides_mcm(a, b)
+    if mcm != eu:
+        print(f"[ERROR] MCM por factores = {mcm}, pero Euclides = {eu}.")
+    else:
+        return mcm
 
 def obtener_mcm_lista(lista_numeros):
     """
