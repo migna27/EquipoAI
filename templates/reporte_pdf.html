@@ -95,6 +95,14 @@
         </tbody>
     </table>
 
+    {% if gear_image %}
+    <h2>Visualización del Sistema</h2>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="{{ gear_image }}" style="width: 100%; max-height: 300px; object-fit: contain; border: 1px solid #ccc;">
+        <p style="font-size: 9pt; color: #666;">Captura del estado actual de la simulación.</p>
+    </div>
+    {% endif %}
+
     <div class="footer-text">
         Reporte generado automáticamente por Software de Análisis de Engranajes ITSON
     </div>

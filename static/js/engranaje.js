@@ -139,21 +139,39 @@
         gears.push(new Gear(currentX, centerY, numDientes, startAngle, color));
     });
 
-    // Ajustar Canvas
+    // --- SETUP DE ZOOM ---
     const lastGear = gears[gears.length - 1];
-    const widthNeeded = lastGear.x + lastGear.radius + 50;
-    if (widthNeeded > canvas.width) canvas.width = widthNeeded;
+    const totalWidthNeeded = lastGear.x + lastGear.radius + 50;
+    
+    // Zoom Automático
+    let globalScale = 1;
+    if (totalWidthNeeded > canvas.width) {
+        globalScale = canvas.width / totalWidthNeeded;
+        globalScale *= 0.95;
+    }
+
+    const zoomSlider = document.getElementById('zoomRange');
+    if (zoomSlider) {
+        zoomSlider.value = globalScale;
+        zoomSlider.addEventListener('input', (e) => {
+            globalScale = parseFloat(e.target.value);
+        });
+    }
 
     // --- ANIMACIÓN ---
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        
+        ctx.scale(globalScale, globalScale);
 
         // Línea de centros
         ctx.beginPath();
         ctx.moveTo(gears[0].x, centerY);
         ctx.lineTo(gears[gears.length-1].x, centerY);
         ctx.strokeStyle = '#555';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 4 / globalScale;
         ctx.setLineDash([10, 5]);
         ctx.stroke();
         ctx.setLineDash([]);
@@ -161,19 +179,19 @@
         // Control de velocidad
         let speedFactor = BASE_SPEED;
         if (slowModeCheck && slowModeCheck.checked) {
-            speedFactor = BASE_SPEED * 0.15; // Muy lento para análisis
+            speedFactor = BASE_SPEED * 0.15;
         }
         if (isPaused) speedFactor = 0;
 
-        // Dirección inicial
         let dir = 1;
 
         gears.forEach((gear) => {
             gear.update(speedFactor * dir);
             gear.draw(ctx);
-            dir *= -1; // Alternar dirección 1, -1, 1, -1...
+            dir *= -1;
         });
 
+        ctx.restore();
         requestAnimationFrame(animate);
     }
 

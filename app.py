@@ -79,20 +79,26 @@ def index():
 
     return render_template("index.html", resultados=resultados, analisis_pares=analisis_pares)
 
-@app.route('/descargar_pdf')
+@app.route('/descargar_pdf', methods=['GET', 'POST'])
 def descargar_pdf():
     resultados = session.get('resultados')
     analisis_pares = session.get('analisis_pares')
 
     if not resultados:
         return "No hay datos para generar el reporte."
+    
+    # Capturar la imagen enviada desde el formulario (si existe)
+    gear_image = None
+    if request.method == 'POST':
+        gear_image = request.form.get('gear_image_data')
 
     logo_path = os.path.join(app.root_path, 'static', 'imagenes', 'ITSON_azul.png')
 
     html_content = render_template('reporte_pdf.html', 
                                    resultados=resultados, 
                                    analisis_pares=analisis_pares,
-                                   logo_path=logo_path)
+                                   logo_path=logo_path,
+                                   gear_image=gear_image)
 
     pdf_file = io.BytesIO()
     pisa_status = pisa.CreatePDF(io.BytesIO(html_content.encode('utf-8')), dest=pdf_file)

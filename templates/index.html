@@ -114,7 +114,26 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3 class="text-primary">Resultados</h3>
-                <a href="{{ url_for('descargar_pdf') }}" class="btn btn-warning">Descargar PDF</a>
+                <form id="pdfForm" action="{{ url_for('descargar_pdf') }}" method="POST" target="_blank" style="display:inline;">
+                    <input type="hidden" name="gear_image_data" id="gear_image_data">
+                    <button type="button" onclick="generarYDescargarPDF()" class="btn btn-warning">Descargar PDF</button>
+                </form>
+
+            <script>
+            function generarYDescargarPDF() {
+                const canvas = document.getElementById('gearCanvas');
+                if (canvas) {
+                    // Convertir el contenido del canvas a una imagen Base64 (texto)
+                    const dataURL = canvas.toDataURL('image/png');
+                    // Poner ese texto en el input oculto
+                    document.getElementById('gear_image_data').value = dataURL;
+                    // Enviar el formulario
+                    document.getElementById('pdfForm').submit();
+                } else {
+                    alert("Error: No se encuentra la visualización para generar el reporte.");
+                }
+            }
+            </script>
             </div>
 
             <div class="alert alert-info">
