@@ -1,27 +1,57 @@
+def factores_primos(n):
+    """
+    Devuelve un diccionario {primo: exponente} con la factorización de n 
+    """
+    n = abs(n)
+    factores = {}
+    divisor = 2
+    while divisor * divisor <=n:
+        while n % divisor == 0:
+            factores[divisor] = factores.get(divisor, 0) + 1
+            n //= divisor
+        divisor += 1
+    if n > 1:
+        factores[n] = factores.get(n, 0) + 1
 
+    return factores
 
 def obtener_mcd(a, b):
     """
-    Calcula el Máximo Común Divisor (MCD) usando el Algoritmo de Euclides.
+    Calcula el Máximo Común Divisor (MCD) usando descomposición en factores primos.
     """
-    while b:
-        a, b = b, a % b
-    return a
+    fa = factores_primos(a)
+    fb = factores_primos(b)
+
+    mcd = 1
+    for primo in fa:
+        if primo in fb:
+            exp_min = min(fa[primo], fb[primo])
+            mcd *= primo ** exp_min
+
+    return mcd
 
 def obtener_mcm(a, b):
     """
-    Calcula el Mínimo Común Múltiplo (MCM).
-    Fórmula: (a * b) / MCD(a, b)
+    Calcula el MCM usando descomposición en factores primos.
     """
     if a == 0 or b == 0:
         return 0
-    # Usamos división entera // para asegurar que el resultado sea int
-    return abs(a * b) // obtener_mcd(a, b)
+
+    factores_a = factores_primos(a)
+    factores_b = factores_primos(b)
+
+    mcm = 1
+    factores_ab = set(factores_a.keys()) | set(factores_b.keys())
+
+    for primo in factores_ab:
+        exp_max = max(factores_a.get(primo, 0), factores_b.get(primo, 0))
+        mcm *= primo ** exp_max
+
+    return mcm
 
 def obtener_mcm_lista(lista_numeros):
     """
-    Calcula el MCM acumulativo de una lista de números.
-    
+    Calcula el MCM acumulativo de una lista de números usando obtener_mcm().
     """
     if not lista_numeros:
         return 0
@@ -35,11 +65,11 @@ def obtener_mcm_lista(lista_numeros):
 def calcular_relacion(dientes_a, dientes_b):
     """
     Calcula la relación simplificada (ej. 12:36 -> 1:3)
-    REUTILIZA: Función obtener_mcd existente.
+    Usa obtener_mcd() ya modificado con método tradicional.
     """
-    if dientes_b == 0: return "N/A"
+    if dientes_b == 0:
+        return "N/A"
     
-    # Usamos el algoritmo de Euclides para encontrar el divisor común
     comun_divisor = obtener_mcd(dientes_a, dientes_b)
     
     simp_a = dientes_a // comun_divisor

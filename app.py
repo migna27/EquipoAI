@@ -110,4 +110,4 @@ def documentacion():
     return render_template('documentacion.html')
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
