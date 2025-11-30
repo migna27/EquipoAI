@@ -60,6 +60,7 @@ window.gearViz = (function() {
             const r_inner = r_pitch - TOOTH_DEPTH;
             const r_hole = this.teeth > 10 ? r_pitch * 0.25 : 6;
 
+            // Gradiente
             const gradient = ctx.createRadialGradient(0, 0, r_inner * 0.5, 0, 0, r_outer);
             gradient.addColorStop(0, this.colorHex);
             gradient.addColorStop(0.8, this.shadeColor(this.colorHex, -10));
@@ -93,7 +94,7 @@ window.gearViz = (function() {
 
             // Punto Guía Blanco
             ctx.beginPath();
-            ctx.arc(0, -(r_pitch - 2), 3, 0, Math.PI * 2); 
+            ctx.arc(r_pitch - 2, 0, 3, 0, Math.PI * 2); 
             ctx.fillStyle = 'white';
             ctx.fill();
             ctx.lineWidth = 0.5;
@@ -109,7 +110,8 @@ window.gearViz = (function() {
             
             // Chavetero
             ctx.beginPath();
-            ctx.rect(-r_hole/4, -r_hole, r_hole/2, r_hole/2);
+            // Rectangulo: (x, y, ancho, alto) -> x = borde del agujero hacia adentro
+            ctx.rect(r_hole/2, -r_hole/4, r_hole/2, r_hole/2);
             ctx.fillStyle = '#333';
             ctx.fill();
 
@@ -123,7 +125,7 @@ window.gearViz = (function() {
             }
 
             ctx.restore();
-        }
+        }       
 
         update(speedMultiplier) {
             const angularSpeed = (1 / this.teeth) * 40 * speedMultiplier;

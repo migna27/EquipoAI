@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <meta charset="UTF-8">
     <title>Analizador de Engranes</title>
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
@@ -19,7 +21,7 @@
             fila.innerHTML = `
                 <td><input type="number" name="diente[]" class="form-control" required min="1" oninput="validarInput(this)"></td>
                 <td><input type="number" name="mant[]" class="form-control" required min="1" oninput="validarInput(this)"></td>
-                <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">Eliminar</button></td>
+                <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)"><i class="bi bi-x-lg"></i> Eliminar</button></td>
             `;
             
             tbody.appendChild(fila);
@@ -44,10 +46,10 @@
 <body>
 
 <div class="container py-5">
-    <a href="/documentacion" class="btn btn-warning position-absolute top-0 end-0 mt-4 me-3 rounded-circle fw-bold shadow" 
+    <a href="/documentacion" class="btn btn-info position-absolute top-0 end-0 mt-4 me-3 rounded-circle fw-bold shadow" 
        style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;" 
        target="_blank" title="Ver Documentación y Ayuda">
-       ?
+       <i class="bi bi-info"></i>
     </a>
     <h1 class="mb-4 text-center"> Analizador de Sistema de Engranajes</h1>
 
@@ -85,26 +87,29 @@
                                 <tr>
                                     <td><input type="number" name="diente[]" class="form-control" value="{{ resultados.dientes[i] }}" min="1"></td>
                                     <td><input type="number" name="mant[]" class="form-control" value="{{ resultados.mant[i] }}" min="1"></td>
-                                    <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">X</button></td>
+                                    <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)"><i class="bi bi-x-lg"></i> Eliminar</button></td>
                                 </tr>
                                 {% endfor %} 
                         {% else %}
                         <tr>
                             <td><input type="number" name="diente[]" class="form-control" min="1"></td>
                             <td><input type="number" name="mant[]" class="form-control" min="1"></td>
-                            <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">X</button></td>
+                            <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)"><i class="bi bi-x-lg"></i> Eliminar</button></td>
                         </tr>
 
                             <tr>
                                 <td><input type="number" name="diente[]" class="form-control" ></td>
                                 <td><input type="number" name="mant[]" class="form-control" ></td>
-                                <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">X</button></td>
+                                <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)"><i class="bi bi-x-lg"></i> Eliminar</button></td>
                             </tr>
                         {% endif %}
                     </tbody>
                 </table>
-                <button type="button" class="btn btn-outline-primary" onclick="agregarFila()">+ Agregar</button>
-                <button type="submit" class="btn btn-success">Calcular</button>
+                <button type="button" class="btn btn-primary" onclick="agregarFila()">
+                <i class="bi bi-plus-circle"></i></i> Agregar
+                </button>
+
+                <button type="submit" class="btn btn-success"><i class="bi bi-calculator-fill"></i> Calcular</button>
             </form>
         </div>
     </div>
@@ -146,7 +151,7 @@
                         <th>Par</th>
                         <th>Dientes</th>
                         <th>Ingeniería</th> <th>Distancia</th>  <th>Ciclo</th>
-                        <th>Mantenimiento</th>
+                        <th>Mantenimiento (h)</th>
                     </tr>
                 </thead>
                 <tbody>
