@@ -43,3 +43,30 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/engranaje.js') }}"></script>
+<script>
+function generarYDescargarPDF() {
+    const canvas = document.getElementById('gearCanvas');
+    // Verificamos que el canvas y nuestra librería de visualización (window.gearViz) existan
+    if (canvas && window.gearViz) {
+        
+        // 1. Forzamos un dibujado del canvas SIN el grid (usando la nueva función pública)
+        window.gearViz.drawForCapture();
+        
+        // 2. Capturamos el contenido del canvas en este instante (ahora limpio)
+        const dataURL = canvas.toDataURL('image/png');
+        
+        // 3. Ponemos la imagen en el input oculto del formulario
+        const inputImagen = document.getElementById('gear_image_data');
+        if (inputImagen) {
+            inputImagen.value = dataURL;
+            // 4. Enviamos el formulario para descargar el PDF
+            document.getElementById('pdfForm').submit();
+        } else {
+            console.error("Error: No se encontró el input 'gear_image_data'. Asegúrate de haber actualizado index.html con el formulario.");
+        }
+
+    } else {
+        alert("Error: No se puede generar la imagen de la visualización.");
+    }
+}
+</script>

@@ -1,4 +1,5 @@
-(function() {
+// Asignamos la función autoejecutable a una variable global para exponer métodos
+window.gearViz = (function() {
     const canvas = document.getElementById('gearCanvas');
     const container = document.getElementById('canvasContainer');
     if (!canvas || !container) return;
@@ -26,19 +27,12 @@
     try { dientesData = JSON.parse(rawData || '[]'); } catch (e) {}
     if (dientesData.length === 0) return;
 
-    // --- FUNCIÓN RESPONSIVA (Solución al área negra) ---
+    // --- FUNCIÓN RESPONSIVA ---
     function resizeCanvas() {
-        // Ajustamos la resolución interna del canvas al tamaño visual del contenedor
         canvas.width = container.clientWidth;
-        canvas.height = 400; // Altura fija para mantener consistencia
-        
-        // Opcional: Recalcular centro si se desea, o dejar que el usuario mueva
-        // drawGrid y animate usarán automáticamente el nuevo canvas.width
+        canvas.height = 400; 
     }
-    
-    // Escuchar cambios de tamaño de ventana
     window.addEventListener('resize', resizeCanvas);
-    // Ejecutar una vez al inicio
     resizeCanvas();
 
     // --- CLASE GEAR ---
@@ -63,15 +57,18 @@
             const r_inner = r_pitch - TOOTH_DEPTH;
             const r_hole = this.teeth > 10 ? r_pitch * 0.25 : 6;
 
+            // 1. Gradiente Más Sutil
             const gradient = ctx.createRadialGradient(0, 0, r_inner * 0.5, 0, 0, r_outer);
             gradient.addColorStop(0, this.colorHex);
-            gradient.addColorStop(0.8, this.shadeColor(this.colorHex, -20));
-            gradient.addColorStop(1, this.shadeColor(this.colorHex, -40));
+            // CAMBIO: Valores más bajos para un efecto más suave
+            gradient.addColorStop(0.8, this.shadeColor(this.colorHex, -10)); // Antes -20
+            gradient.addColorStop(1, this.shadeColor(this.colorHex, -25));  // Antes -40
 
             ctx.fillStyle = gradient;
             ctx.strokeStyle = '#111';
             ctx.lineWidth = 1;
 
+            // 2. Dientes
             ctx.beginPath();
             const numPoints = this.teeth * 2;
             for (let i = 0; i < numPoints; i++) {
@@ -93,24 +90,35 @@
             ctx.fill();
             ctx.stroke();
 
-            // Decoración
+            // 3. Punto Guía Blanco
+            ctx.beginPath();
+            ctx.arc(0, -(r_pitch - 2), 3, 0, Math.PI * 2); 
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+
+            // 4. Eje Central
             ctx.beginPath();
             ctx.arc(0, 0, r_hole, 0, Math.PI * 2);
             ctx.fillStyle = '#ddd';
             ctx.fill();
+            ctx.lineWidth = 1;
             ctx.stroke();
             
+            // 5. Chavetero
             ctx.beginPath();
             ctx.rect(-r_hole/4, -r_hole, r_hole/2, r_hole/2);
             ctx.fillStyle = '#333';
             ctx.fill();
 
+            // 6. Texto
             if (this.teeth > 12) {
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
                 ctx.font = 'bold 12px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(this.teeth + 'z', 0, r_pitch * 0.6);
+                ctx.fillText(this.teeth + 'z', 0, r_pitch * 0.5);
             }
 
             ctx.restore();
@@ -169,10 +177,8 @@
 
     // Centrado Inicial
     const totalWidth = gears[gears.length-1].x - gears[0].x;
-    // Como canvas.width puede cambiar, usamos un valor inicial seguro o esperamos al resize
-    // Ajustaremos cameraOffset en el animate si es la primera vez, o aquí con un width estimado
     cameraOffset.x = (container.clientWidth / 2) - (totalWidth / 2);
-    cameraOffset.y = 400 / 2; // Altura fija definida en resizeCanvas
+    cameraOffset.y = 400 / 2; 
     
     if (totalWidth > container.clientWidth * 0.8) {
         cameraZoom = (container.clientWidth * 0.8) / totalWidth;
@@ -187,13 +193,11 @@
         ctx.beginPath();
         
         const gridSize = 50;
-        // Calculamos los límites visibles basándonos en el tamaño ACTUAL del canvas
         const left = -cameraOffset.x / cameraZoom;
         const top = -cameraOffset.y / cameraZoom;
         const right = (canvas.width - cameraOffset.x) / cameraZoom;
         const bottom = (canvas.height - cameraOffset.y) / cameraZoom;
 
-        // Agregamos un margen extra (+1) para asegurar que cubra todo
         for (let x = Math.floor(left / gridSize) * gridSize; x < right + gridSize; x += gridSize) {
             ctx.moveTo(x, top);
             ctx.lineTo(x, bottom);
@@ -206,15 +210,19 @@
         ctx.restore();
     }
 
-    function animate() {
-        // Limpiamos todo el canvas con su tamaño actual
+    // Nueva función principal de dibujo que acepta un parámetro booleano
+    function drawFrame(includeGrid) {
+        // Limpiamos todo el canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         ctx.save();
         ctx.translate(cameraOffset.x, cameraOffset.y);
         ctx.scale(cameraZoom, cameraZoom);
 
-        drawGrid();
+        // Solo dibujamos el grid si se solicita
+        if (includeGrid) {
+            drawGrid();
+        }
 
         // Línea de centros
         ctx.beginPath();
@@ -239,19 +247,20 @@
         });
 
         ctx.restore();
+    }
+
+    // Bucle de animación normal (siempre incluye el grid)
+    function animate() {
+        drawFrame(true);
         requestAnimationFrame(animate);
     }
 
     // --- EVENTOS ---
     canvas.addEventListener('mousedown', (e) => {
         isDragging = true;
-        // Obtener posición del mouse relativa al canvas
         const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        
-        dragStart.x = mouseX - cameraOffset.x;
-        dragStart.y = mouseY - cameraOffset.y;
+        dragStart.x = (e.clientX - rect.left) - cameraOffset.x;
+        dragStart.y = (e.clientY - rect.top) - cameraOffset.y;
         canvas.style.cursor = 'grabbing';
     });
 
@@ -261,19 +270,15 @@
     canvas.addEventListener('mousemove', (e) => {
         if (isDragging) {
             const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-
-            cameraOffset.x = mouseX - dragStart.x;
-            cameraOffset.y = mouseY - dragStart.y;
+            cameraOffset.x = (e.clientX - rect.left) - dragStart.x;
+            cameraOffset.y = (e.clientY - rect.top) - dragStart.y;
         }
     });
 
     canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
         const zoomAmount = e.deltaY * -0.001;
-        const newZoom = Math.min(Math.max(0.1, cameraZoom + zoomAmount), 5);
-        cameraZoom = newZoom;
+        cameraZoom = Math.min(Math.max(0.1, cameraZoom + zoomAmount), 5);
         if (zoomSlider) zoomSlider.value = cameraZoom;
     });
 
@@ -301,4 +306,11 @@
     }
 
     animate();
+
+    // Se la función pública para capturar sin grid
+    return {
+        drawForCapture: function() {
+            drawFrame(false);
+        }
+    };
 })();
