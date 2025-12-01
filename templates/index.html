@@ -6,42 +6,7 @@
     <meta charset="UTF-8">
     <title>Analizador de Engranes</title>
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    
-    <style>
-        .valid-input { border-color: #28a745 !important; }
-        .invalid-input { border-color: #dc3545 !important; }
-    </style>
 
-    <script>
-        function agregarFila() {
-            const tbody = document.getElementById("tbody-engranes");
-            const fila = document.createElement("tr");
-            
-           
-            fila.innerHTML = `
-                <td><input type="number" name="diente[]" class="form-control" required min="1" oninput="validarInput(this)"></td>
-                <td><input type="number" name="mant[]" class="form-control" required min="1" oninput="validarInput(this)"></td>
-                <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)"><i class="bi bi-x-lg"></i> Eliminar</button></td>
-            `;
-            
-            tbody.appendChild(fila);
-        }
-
-        function eliminarFila(btn) { 
-            btn.parentElement.parentElement.remove(); 
-        }
-
-        function validarInput(input) {
-            // Validación visual adicional
-            if (input.value.trim() === "" || parseInt(input.value) <= 0) {
-                input.classList.add("invalid-input"); 
-                input.classList.remove("valid-input");
-            } else {
-                input.classList.add("valid-input"); 
-                input.classList.remove("invalid-input");
-            }
-        }
-    </script>
 </head>
 <body>
 
@@ -124,21 +89,6 @@
                     <button type="button" onclick="generarYDescargarPDF()" class="btn btn-warning">Descargar PDF</button>
                 </form>
 
-            <script>
-            function generarYDescargarPDF() {
-                const canvas = document.getElementById('gearCanvas');
-                if (canvas) {
-                    // Convertir el contenido del canvas a una imagen Base64 (texto)
-                    const dataURL = canvas.toDataURL('image/png');
-                    // Poner ese texto en el input oculto
-                    document.getElementById('gear_image_data').value = dataURL;
-                    // Enviar el formulario
-                    document.getElementById('pdfForm').submit();
-                } else {
-                    alert("Error: No se encuentra la visualización para generar el reporte.");
-                }
-            }
-            </script>
             </div>
 
             <div class="alert alert-info">
@@ -188,5 +138,6 @@
     </div>
     {% endif %}
 </div>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
