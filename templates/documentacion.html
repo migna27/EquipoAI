@@ -32,51 +32,90 @@
         <h2>1. Algoritmos Matemáticos</h2>
         
         <h3>1.1. Máximo Común Divisor (MCD) y Ciclos de Desgaste</h3>
-        <p>Explicación de cómo el MCD determina si el desgaste de los dientes es uniforme o localizado (Diente de caza).</p>
-        
+        <p>
+            El MCD entre los dientes de dos engranes determina cuántas veces volverán a contactar los mismos dientes.  
+            Si el MCD es 1, el sistema tiene un <strong>diente de caza</strong>, lo que significa que cada diente del engrane A
+            eventualmente tocará cada diente del engrane B.  
+            Esto produce un desgaste <strong>uniforme</strong>.  
+            <br><br>
+            Si el MCD es mayor que 1, los dientes se repiten en ciclos fijos, lo que genera desgaste <strong>localizado</strong> 
+            porque siempre se tocan los mismos pares de dientes.
+        </p>
+
         <div class="note-box">
-            <div class="note-title">📝 Nota para el equipo de investigación:</div>
-            <ul>
-                <li>Buscar un diagrama de Venn o una animación simple que explique qué es el MCD visualmente.</li>
-                <li>Investigar la definición técnica de "Diente de Caza" (Hunting Tooth) en ingeniería mecánica para agregarla aquí.</li>
-            </ul>
+            <div class="note-title">📝 “Diente de Caza”:</div>
+            <p>
+                Un <strong>Hunting Tooth</strong> (diente de caza) es una propiedad deseable en sistemas de transmisión.  
+                Significa que un diente “persigue” a todos los demás antes de repetir contacto, distribuyendo la carga y evitando 
+                fallas prematuras.  
+                <br><br>
+                Formalmente:  
+                <em>Un sistema tiene diente de caza si y solo si MCD(dientesA, dientesB) = 1.</em>
+            </p>
         </div>
 
         <h3>1.2. Mínimo Común Múltiplo (MCM) y Mantenimiento</h3>
-        <p>Fundamento del cálculo para la coincidencia de intervalos de tiempo.</p>
+        <p>
+            El MCM se utiliza para determinar cada cuántas vueltas ambos engranes regresan simultáneamente a su posición inicial.  
+            Esto permite calcular ciclos completos de operación, ideales para definir intervalos de mantenimiento o inspección.
+        </p>
 
         <div class="note-box">
-            <div class="note-title">📝 Nota para el equipo de investigación:</div>
-            <ul>
-                <li>Redactar un ejemplo cotidiano (ej: "Si un bus pasa cada 10 min y otro cada 15 min...").</li>
-                <li>Explicar por qué usamos el Algoritmo de Euclides en el código en lugar de la fuerza bruta.</li>
-            </ul>
+            <div class="note-title">📝 Ejemplo cotidiano:</div>
+            <p>
+                Si un autobús pasa cada <strong>10 minutos</strong> y otro cada <strong>15 minutos</strong>, ambos volverán a coincidir 
+                exactamente al mismo tiempo dentro de <strong>30 minutos</strong>, porque:<br>
+                <em>MCM(10, 15) = 30</em>.
+            </p>
+            <br>
+            <div class="note-title">📝 ¿Por qué usamos el Algoritmo de Euclides?</div>
+            <p>
+                El Algoritmo de Euclides permite obtener el MCD (y por extensión el MCM) de forma extremadamente eficiente.  
+                Un método de fuerza bruta requeriría revisar cientos o miles de divisiones para engranes grandes.  
+                En cambio, Euclides funciona en tiempo <strong>logarítmico</strong> y es ideal incluso para cálculos industriales.
+            </p>
         </div>
     </section>
 
     <section>
         <h2>2. Física de Transmisión</h2>
 
-        <h3>2.1. Relación de Transmisión (Gear Ratio)</h3>
-        <p>Cómo la diferencia de dientes afecta el comportamiento del sistema.</p>
+        <h3>2.1. Relación de Transmisión </h3>
+        <p>
+            La relación de transmisión indica cuántas vueltas da un engrane respecto a otro.  
+            La fórmula utilizada es:<br>
+            <em>Ratio = DientesSalida / DientesEntrada</em>.  
+            <br><br>
+            Un engrane grande moviendo uno pequeño actúa como <strong>multiplicador de velocidad</strong>.  
+            Un engrane pequeño moviendo uno grande actúa como <strong>reductor de velocidad</strong>.
+        </p>
 
         <div class="note-box">
-            <div class="note-title">📝 Nota para el equipo de investigación:</div>
-            <ul>
-                <li>Buscar o crear una imagen comparativa: "Reductor de velocidad" vs "Multiplicador de velocidad".</li>
-                <li>Definir claramente la fórmula: <em>Ratio = Dientes Salida / Dientes Entrada</em>.</li>
-            </ul>
+            <div class="note-title">📝 Explicación visual :</div>
+            <p>
+                En un reductor, la rueda grande avanza lentamente pero con más torque.  
+                En un multiplicador, la rueda pequeña acelera el movimiento pero reduce el torque.
+            </p>
         </div>
 
         <h3>2.2. Revoluciones Por Minuto (RPM)</h3>
-        <p>La relación inversa entre tamaño y velocidad.</p>
+        <p>
+            Las RPM de dos engranes son inversamente proporcionales a la cantidad de dientes.  
+            <br>
+            Esto ocurre debido a la <strong>conservación de la velocidad tangencial</strong>:
+            Ambos engranes deben mover la superficie de contacto a la misma velocidad, lo que obliga al engrane pequeño
+            a girar más rápido.
+        </p>
 
         <div class="note-box">
-            <div class="note-title">📝 Nota para el equipo de investigación:</div>
-            <ul>
-                <li>Insertar un video corto (o GIF) que muestre un engranaje pequeño girando rápido moviendo a uno grande lento.</li>
-                <li>Explicar la Ley de conservación de la velocidad tangencial.</li>
-            </ul>
+            <div class="note-title">📝 Concepto físico:</div>
+            <p>
+                La velocidad tangencial es:<br>
+                <em>V = ω · r</em>  
+                (velocidad = velocidad angular × radio).  
+                <br><br>
+                Como V debe ser igual en ambos engranes, uno compensa al otro modificando sus RPM.
+            </p>
         </div>
     </section>
 
@@ -84,21 +123,42 @@
         <h2>3. Conceptos Avanzados (En Desarrollo)</h2>
         
         <h3>3.1. Distancia entre Centros y Módulo</h3>
+        <p>
+            El módulo es una medida estándar que determina el tamaño de los dientes de un engrane.  
+            Dos engranes solo pueden engranar correctamente si tienen el mismo módulo.  
+            <br><br>
+            El diámetro primitivo (Pitch Diameter) es el círculo teórico donde ocurre el contacto real entre dientes.  
+            La distancia entre centros de dos engranes es:
+            <br><br>
+            <em>Distancia = (D1 + D2) / 2</em>.
+        </p>
+
         <div class="note-box">
-            <div class="note-title">📝 Nota para el equipo de investigación:</div>
-            <ul>
-                <li>Buscar un diagrama técnico que muestre qué es el "Diámetro Primitivo" (Pitch Diameter).</li>
-                <li>Explicar por qué dos engranajes de módulos diferentes no pueden encajar.</li>
-            </ul>
+            <div class="note-title">📝 Explicación adicional:</div>
+            <p>
+                Si los módulos no coinciden, las formas de los dientes no encajan, generando ruido, vibración,
+                desgaste extremo o incluso rotura del mecanismo.
+            </p>
         </div>
 
         <h3>3.2. Torque y Potencia</h3>
+        <p>
+            La potencia transmitida en un sistema de engranes se relaciona mediante la fórmula:
+            <br><br>
+            <em>Potencia (W) = Torque (N·m) × RPM × 2π / 60</em>
+            <br><br>
+            Cuando un engrane reduce la velocidad, aumenta el torque proporcionalmente.  
+            Esto se conoce como <strong>ganancia mecánica</strong>.
+        </p>
+
         <div class="note-box">
-            <div class="note-title">📝 Nota para el equipo de investigación:</div>
-            <ul>
-                <li>Buscar la fórmula que relaciona Potencia, Torque y RPM.</li>
-                <li>Explicar conceptualmente "ganancia mecánica".</li>
-            </ul>
+            <div class="note-title">📝 Explicación conceptual:</div>
+            <p>
+                Los engranes no crean energía: solo la transforman.  
+                Si bajan la velocidad, sube el torque.  
+                Si sube la velocidad, baja el torque.  
+                Este principio es fundamental en cajas de transmisión y mecanismos industriales.
+            </p>
         </div>
     </section>
 
